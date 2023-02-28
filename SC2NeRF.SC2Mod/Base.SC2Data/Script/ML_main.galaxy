@@ -1,0 +1,5 @@
+include "Script/ML/UnitFramePanel"
+
+void ML_main(){
+    ML_UnitFramePanel_init();
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TriggerData>
+    <Library Id="44451F29">
+        <Root>
+            <Item Type="CustomScript" Library="44451F29" Id="F199055C"/>
+        </Root>
+        <Element Type="CustomScript" Id="F199055C">
+            <ScriptCode>
+                include &quot;Script/ML_main&quot;
+            </ScriptCode>
+            <InitFunc>ML_main</InitFunc>
+        </Element>
+    </Library>
+</TriggerData>

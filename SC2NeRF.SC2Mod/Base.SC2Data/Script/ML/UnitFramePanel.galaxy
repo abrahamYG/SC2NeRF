@@ -1,0 +1,130 @@
+include "Script/ML/UnitFramePanel/header"
+
+static const string UNITLIST_KEYPREFIX = "ML/UnitFramePanel";
+static const string PANEL_PATH = "UIContainer/ConsoleUIContainer/ML_Container/UnitFramePanel";
+static const string ENTRYIDFIELD_PATH = "EntryID";
+static const string ENTRYNAMELABEL_PATH = "UnitName";
+static const string MODELFRAME_PATH = "EntryID";
+static const fixed TIMER_PERIOD = 12.00;
+
+
+static int Panel;
+static int EntryIdField;
+static int EntryNameLabel;
+static timer Timer;
+static trigger TimerTrigger;
+static int UnitListCurrentIndex = -1;
+
+
+static string UnitListCountKey(){
+    string format = "{keyprefix}::Count";
+    return StringReplaceWord(format,"{keyprefix}",UNITLIST_KEYPREFIX,1,true);
+}
+
+
+static string UnitListIndexKey(int index){
+    string format = "{keyprefix}[{index}]";
+    return StringReplaceWord(StringReplaceWord(format,"{keyprefix}",UNITLIST_KEYPREFIX,1,true),"{index}",IntToString(index),1,true);
+}
+
+static void UnitListSetCount(int count){
+    DataTableSetInt(true,UnitListCountKey(),count);
+}
+static int UnitListGetCount(){
+    int count = 0;
+    if(DataTableValueExists(true,UnitListCountKey())){
+        count = DataTableGetInt(true,UnitListCountKey());
+    }
+    return count;
+}
+
+static void UnitListSet(int index,string unitId){
+    DataTableSetString(true,UnitListIndexKey(index),unitId);
+}
+
+
+static string UnitListGet(int index){
+    string unitId = null;
+    if(DataTableValueExists(true,UnitListIndexKey(index))){
+        unitId = DataTableGetString(true,UnitListIndexKey(index));
+    }
+    return unitId;
+}
+
+
+static void UnitListAdd(string unitId){
+    int count = UnitListGetCount();
+    UnitListSet(count,unitId);
+    UnitListSetCount(count+1);
+}
+
+static void PanelSetUnit(string unitId){
+    DialogControlSetPropertyAsString(EntryIdField,c_triggerControlPropertyEditText,PlayerGroupAll(),unitId);
+    DialogControlSetPropertyAsText(EntryNameLabel,c_triggerControlPropertyText,PlayerGroupAll(),StringToText(unitId));
+}
+
+bool ML_UnitFramePanel_TimerFunc(bool a, bool b){
+    UnitListCurrentIndex +=1;
+    if( (UnitListCurrentIndex>=UnitListGetCount()) || (UnitListCurrentIndex<0)){
+        UnitListCurrentIndex = 0;
+    }
+    PanelSetUnit(UnitListGet(UnitListCurrentIndex));
+    
+    return true;
+}
+
+
+static bool UnitListFilter(string entry){
+    bool isUnit = true;
+    int catalog = c_gameCatalogUnit;
+    isUnit = isUnit && (CatalogFieldValueGetAsInt(catalog,entry,"FlagArray[Missile]",c_playerAny) == 0);
+    isUnit = isUnit && (CatalogFieldValueGetAsInt(catalog,entry,"EditorFlags[NoPlacement]",c_playerAny) == 0);
+    isUnit = isUnit && (CatalogFieldValueGetAsInt(catalog,entry,"EditorFlags[NeutralDefault]",c_playerAny) == 0);
+    isUnit = isUnit && (CatalogFieldValueGetAsInt(catalog,entry,"GlossaryPriority",c_playerAny) > 0);
+    isUnit = isUnit && (!StringContains(CatalogFieldValueGet(catalog,entry,"EditorCategories",c_playerAny),"ObjectFamily:Storymode",c_stringAnywhere,false));
+    isUnit = isUnit && (!StringContains(CatalogFieldValueGet(catalog,entry,"EditorCategories",c_playerAny),"ObjectType:Shape",c_stringAnywhere,false));
+    return isUnit;
+}
+
+
+static void InitUnitList(){
+    int i = 0;
+    int catalog = c_gameCatalogUnit;
+    string catalogEntry = null;
+    int catalogCount = CatalogEntryCount(catalog)-1;
+    for(i=1;i<catalogCount;i+=1){
+        catalogEntry = CatalogEntryGet(catalog,i);
+        if(UnitListFilter(catalogEntry)){
+            TriggerDebugOutput(1,
+                StringToText(
+                    "GlossaryPriority for "+catalogEntry+": "+IntToString(CatalogFieldValueGetAsInt(catalog,catalogEntry,"GlossaryPriority",c_playerAny))
+                ),
+                true);
+            UnitListAdd(catalogEntry);
+        }
+    }
+
+}
+
+static void InitTimer(){
+    Timer = TimerCreate();
+    TimerStart(Timer,TIMER_PERIOD,true,c_timeReal);
+    TimerTrigger = TriggerCreate("ML_UnitFramePanel_TimerFunc");
+    TriggerAddEventTimer(TimerTrigger,Timer);
+}
+
+static void InitUI(){
+    Panel = DialogControlHookupStandard(c_triggerControlTypePanel,PANEL_PATH);
+    EntryIdField = DialogControlHookup(Panel,c_triggerControlTypeEditBox,ENTRYIDFIELD_PATH);
+    EntryNameLabel = DialogControlHookup(Panel,c_triggerControlTypeLabel,ENTRYNAMELABEL_PATH);
+
+}
+
+void ML_UnitFramePanel_init(){
+    InitUnitList();
+    InitUI();
+    InitTimer();
+    
+    UnitListCurrentIndex = 0;
+    PanelSetUnit(UnitListGet(UnitListCurrentIndex));
+}

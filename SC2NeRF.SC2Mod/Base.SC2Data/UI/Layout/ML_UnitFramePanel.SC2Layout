@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Desc>
+    <Frame type="Frame" Name="UnitFramePanel">
+        <Frame type="Image" name="BG">
+            <Anchor relative="$parent" offset="-4"/>
+            <Color val="255,0,255"/>
+            <Alpha val="255"/>
+        </Frame>
+        <Frame type="EditBox" name="EntryID" template="StandardBattlenetTemplates/BattlenetEditBoxTemplate">
+            <Anchor side="Top" relative="$parent" pos="Max" offset="100"/>
+            <Anchor side="Left" relative="$parent" pos="Max" offset="100"/>
+            <Width val="0"/>
+            <Height val="0"/>
+            <Text val="Marine"/>
+            
+            
+        </Frame>
+        <Frame type="Label" name="UnitName">
+            <Anchor side="Top" relative="$parent" pos="Min" offset="20"/>
+            <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+            <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+            <Width val="400"/>
+            <Height val="40"/>
+            <Text val="n/a"/>
+            <Style val="GameFrameTitle"/>
+
+        </Frame>
+
+        <Frame type="Frame" name="UnitModelContainer">
+            <Anchor relative="$parent" offset="-4"/>
+            <Frame type="UnitModelFrame" name="UnitModelFrame" template="StandardUnitModelTemplates/UnitModelFrameBaseTemplate">
+                <Anchor side="Top" relative="$parent" pos="-15%" offset="0"/>
+                <Anchor side="Bottom" relative="$parent" pos="115%" offset="0"/>
+                <UnitLink val="{$parent/$parent/EntryID/@Text}"/>
+                <TeamColorIndex val="6"/>
+                <ResetTurnAnimationOnUnitChange val="True"/>
+                
+        
+                <Frame type="Model" name="Model">
+                    <Anchor relative="$parent"/>
+                    <UseAlternateTime val="true"/>
+                    <UseAspectScaling val="false"/>
+                </Frame>
+            </Frame>
+        </Frame>
+    </Frame>
+</Desc>

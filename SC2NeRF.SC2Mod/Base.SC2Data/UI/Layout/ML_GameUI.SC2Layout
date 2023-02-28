@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Desc>
+    <Frame type="Frame" name="GameUI/UIContainer/ConsoleUIContainer" file="GameUI">
+        <Frame type="Frame" name="ML_Container">
+            <Anchor relative="$parent"/>
+            <Handle val="ML_Container"/>
+            <Frame type="Frame" name="UnitFramePanel" template="ML_UnitFramePanel/UnitFramePanel">
+                <Anchor relative="$parent"/>
+            </Frame>
+        </Frame>
+    </Frame>
+</Desc>
