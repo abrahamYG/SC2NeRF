@@ -3,17 +3,30 @@ include "Script/ML/UnitFramePanel/header"
 static const string UNITLIST_KEYPREFIX = "ML/UnitFramePanel";
 static const string PANEL_PATH = "UIContainer/ConsoleUIContainer/ML_Container/UnitFramePanel";
 static const string ENTRYIDFIELD_PATH = "EntryID";
+static const string ROTATIONFIELD_PATH = "Rotation";
 static const string ENTRYNAMELABEL_PATH = "UnitName";
+static const string PAUSEBTN_PATH = "Pause";
 static const string MODELFRAME_PATH = "UnitModelContainer/UnitModelFrame";
 static const fixed TIMER_PERIOD = 12.00;
+static const fixed ROTATIONTIMER_PERIOD = 0.05;
 
 
 static int Panel;
 static int EntryIdField;
+static int RotationField;
 static int EntryNameLabel;
 static int ModelFrame;
+
+static int PauseBtn;
+static trigger PauseBtnTrigger;
+
 static timer Timer;
 static trigger TimerTrigger;
+
+static int Rotation;
+static timer RotationTimer;
+static trigger RotationTimerTrigger;
+
 static int UnitListCurrentIndex = -1;
 
 
@@ -66,13 +79,46 @@ static void PanelSetUnit(string unitId){
     DialogControlSendAnimationEvent(ModelFrame,PlayerGroupAll(),"KeepPaused");
 }
 
-bool ML_UnitFramePanel_TimerFunc(bool a, bool b){
+
+static void PanelSetNextUnit(){
     UnitListCurrentIndex +=1;
     if( (UnitListCurrentIndex>=UnitListGetCount()) || (UnitListCurrentIndex<0)){
         UnitListCurrentIndex = 0;
     }
     PanelSetUnit(UnitListGet(UnitListCurrentIndex));
+}
+
+
+static void PanelSetUnitRotation(int val){
+    DialogControlSetPropertyAsString(RotationField,c_triggerControlPropertyEditText,PlayerGroupAll(),IntToString(val));
+}
+
+
+bool ML_UnitFramePanel_RotationTimerFunc(bool a, bool b){
+    Rotation +=1;
+    if( (Rotation>=360) || (Rotation<0)){
+        Rotation = 0;
+        PanelSetNextUnit();
+    }
+    PanelSetUnitRotation(Rotation);
     
+    return true;
+}
+
+
+bool ML_UnitFramePanel_TimerFunc(bool a, bool b){
+    PanelSetNextUnit();
+    
+    return true;
+}
+
+
+bool ML_UnitFramePanel_PauseButtonFunc(bool a, bool b){
+    bool toggledState = DialogControlGetPropertyAsBool(PauseBtn,c_triggerControlPropertyToggled,EventPlayer());
+    TimerPause(RotationTimer,!toggledState);
+    DialogControlSetPropertyAsBool(PauseBtn,c_triggerControlPropertyToggled,PlayerGroupAll(),!toggledState);
+    
+    //DialogControlSendAnimationEvent(ModelFrame,PlayerGroupAll(),"PauseRotation");
     return true;
 }
 
@@ -113,15 +159,28 @@ static void InitTimer(){
     Timer = TimerCreate();
     TimerStart(Timer,TIMER_PERIOD,true,c_timeReal);
     TimerTrigger = TriggerCreate("ML_UnitFramePanel_TimerFunc");
-    TriggerAddEventTimer(TimerTrigger,Timer);
+    //TriggerAddEventTimer(TimerTrigger,Timer);
+    RotationTimer = TimerCreate();
+    TimerStart(RotationTimer,ROTATIONTIMER_PERIOD,true,c_timeReal);
+    RotationTimerTrigger = TriggerCreate("ML_UnitFramePanel_RotationTimerFunc");
+    TriggerAddEventTimer(RotationTimerTrigger,RotationTimer);
 }
 
 static void InitUI(){
     Panel = DialogControlHookupStandard(c_triggerControlTypePanel,PANEL_PATH);
-    EntryIdField = DialogControlHookup(Panel,c_triggerControlTypeEditBox,ENTRYIDFIELD_PATH);
-    EntryNameLabel = DialogControlHookup(Panel,c_triggerControlTypeLabel,ENTRYNAMELABEL_PATH);
-    ModelFrame = DialogControlHookup(Panel,c_triggerControlTypePanel,MODELFRAME_PATH);
 
+    EntryIdField = DialogControlHookup(Panel,c_triggerControlTypeEditBox,ENTRYIDFIELD_PATH);
+    RotationField = DialogControlHookup(Panel,c_triggerControlTypeEditBox,ROTATIONFIELD_PATH);
+    EntryNameLabel = DialogControlHookup(Panel,c_triggerControlTypeLabel,ENTRYNAMELABEL_PATH);
+    ModelFrame = DialogControlHookup(Panel,c_triggerControlTypeUnitModel,MODELFRAME_PATH);
+    
+    PauseBtn = DialogControlHookup(Panel,c_triggerControlTypeButton,PAUSEBTN_PATH);
+    
+    //DialogControlSetPropertyAsBool(PauseBtn,c_triggerControlPropertyEnabled,PlayerGroupAll(),false);
+
+    PauseBtnTrigger = TriggerCreate("ML_UnitFramePanel_PauseButtonFunc");
+    DialogControlSetPropertyAsBool(PauseBtn,c_triggerControlPropertyToggled,PlayerGroupAll(),false);
+    TriggerAddEventDialogControl(PauseBtnTrigger,c_playerAny,PauseBtn,c_triggerControlEventTypeClick);
 }
 
 void ML_UnitFramePanel_init(){
@@ -129,6 +188,6 @@ void ML_UnitFramePanel_init(){
     InitUI();
     InitTimer();
     
-    UnitListCurrentIndex = 3;
+    UnitListCurrentIndex = 1;
     PanelSetUnit(UnitListGet(UnitListCurrentIndex));
 }

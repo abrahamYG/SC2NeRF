@@ -7,6 +7,7 @@
             <Frame type="Frame" name="UnitFramePanel" template="ML_UnitFramePanel/UnitFramePanel">
                 <Anchor relative="$parent"/>
             </Frame>
+            
         </Frame>
     </Frame>
 </Desc>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Desc>
     <Frame type="Frame" Name="UnitFramePanel">
+        
         <Frame type="Image" name="BG">
             <Anchor relative="$parent" offset="-4"/>
             <Color val="255,0,255"/>
@@ -12,8 +13,13 @@
             <Width val="0"/>
             <Height val="0"/>
             <Text val="Marine"/>
-            
-            
+        </Frame>
+        <Frame type="EditBox" name="Rotation" template="StandardBattlenetTemplates/BattlenetEditBoxTemplate">
+            <Anchor side="Top" relative="$parent" pos="Max" offset="100"/>
+            <Anchor side="Left" relative="$parent" pos="Max" offset="100"/>
+            <Width val="0"/>
+            <Height val="0"/>
+            <Text val="335"/>
         </Frame>
         <Frame type="Label" name="UnitName">
             <Anchor side="Top" relative="$parent" pos="Min" offset="20"/>
@@ -25,13 +31,32 @@
             <Style val="GameFrameTitle"/>
 
         </Frame>
+        <Frame type="Label" name="RotationLabel">
+            <Anchor side="Top" relative="$parent/UnitName" pos="Max" offset="20"/>
+            <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+            <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+            <Width val="400"/>
+            <Height val="40"/>
+            <Text val="{$parent/Rotation/@Text}"/>
+            <Style val="GameFrameTitle"/>
 
+        </Frame>
+        <Frame type="Button" name="Pause" template="StandardBattlenetTemplates/BattlenetMediumButtonTemplate">
+            <Text val="Pause"/>
+            <Width val="200"/>
+            <Anchor side="Top" pos="Min" relative="$parent" offset="200"/>
+            <Anchor side="Right" pos="Max" relative="$parent" offset="-20"/>
+            <Toggleable val="True"/>
+            <Toggled val="False"/>
+            <Shortcut val="P"/>
+        </Frame>
         <Frame type="Frame" name="UnitModelContainer">
             <Anchor relative="$parent" offset="-4"/>
             <Frame type="UnitModelFrame" name="UnitModelFrame" template="StandardUnitModelTemplates/UnitModelFrameBaseTemplate">
                 <Anchor side="Top" relative="$parent" pos="-15%" offset="0"/>
                 <Anchor side="Bottom" relative="$parent" pos="115%" offset="0"/>
                 <UnitLink val="{$parent/$parent/EntryID/@Text}"/>
+                <Rotation val="{$parent/$parent/Rotation/@Text}"/>
                 <TeamColorIndex val="6"/>
                 <ResetTurnAnimationOnUnitChange val="True"/>
                 <Animation name="FidgetAnim">
@@ -41,7 +66,25 @@
                         <Key type="Identifier" time="0.00" value="AnimSetPausedAll"/>
                     </Controller>
                 </Animation>
-        
+                <Animation name="PauseRotation">
+                    <Event event="PauseRotation" action="DirectionForward,Play"/>
+                    <Event event="ResumeRotation" action="DirectionReverse,Play"/>
+                    <Controller type="State" stateGroup="RotationState" end="Pause">
+                        <Key type="Identifier" time="0" value="Enabled"/>
+                        <Key type="Identifier" time="0" value="Disabled"/>
+                    </Controller>
+                </Animation>
+                <StateGroup name="RotationState">
+                    <DefaultState val="Disabled"/>
+                    <State name="Enabled">
+                        <Action type="SetProperty" frame="$this" TurningEnabled="True"/>
+                    </State>
+                    <State name="Disabled">
+                        <!--<When type="Property" frame="$this" UnitLink="Armory"/>-->
+                        <Action type="SetProperty" frame="$this" TurningEnabled="False"/>
+                    </State>
+                </StateGroup>
+
                 <Frame type="Model" name="Model">
                     <UseAlternateTime val="true"/>
                     <UseAspectScaling val="false"/>
