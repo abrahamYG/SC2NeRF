@@ -4,13 +4,14 @@ static const string UNITLIST_KEYPREFIX = "ML/UnitFramePanel";
 static const string PANEL_PATH = "UIContainer/ConsoleUIContainer/ML_Container/UnitFramePanel";
 static const string ENTRYIDFIELD_PATH = "EntryID";
 static const string ENTRYNAMELABEL_PATH = "UnitName";
-static const string MODELFRAME_PATH = "EntryID";
+static const string MODELFRAME_PATH = "UnitModelContainer/UnitModelFrame";
 static const fixed TIMER_PERIOD = 12.00;
 
 
 static int Panel;
 static int EntryIdField;
 static int EntryNameLabel;
+static int ModelFrame;
 static timer Timer;
 static trigger TimerTrigger;
 static int UnitListCurrentIndex = -1;
@@ -61,6 +62,8 @@ static void UnitListAdd(string unitId){
 static void PanelSetUnit(string unitId){
     DialogControlSetPropertyAsString(EntryIdField,c_triggerControlPropertyEditText,PlayerGroupAll(),unitId);
     DialogControlSetPropertyAsText(EntryNameLabel,c_triggerControlPropertyText,PlayerGroupAll(),StringToText(unitId));
+    Wait(0,c_timeReal);
+    DialogControlSendAnimationEvent(ModelFrame,PlayerGroupAll(),"KeepPaused");
 }
 
 bool ML_UnitFramePanel_TimerFunc(bool a, bool b){
@@ -95,11 +98,11 @@ static void InitUnitList(){
     for(i=1;i<catalogCount;i+=1){
         catalogEntry = CatalogEntryGet(catalog,i);
         if(UnitListFilter(catalogEntry)){
-            TriggerDebugOutput(1,
-                StringToText(
-                    "GlossaryPriority for "+catalogEntry+": "+IntToString(CatalogFieldValueGetAsInt(catalog,catalogEntry,"GlossaryPriority",c_playerAny))
-                ),
-                true);
+            //TriggerDebugOutput(1,
+            //    StringToText(
+            //        "GlossaryPriority for "+catalogEntry+": "+IntToString(CatalogFieldValueGetAsInt(catalog,catalogEntry,"GlossaryPriority",c_playerAny))
+            //    ),
+            //    true);
             UnitListAdd(catalogEntry);
         }
     }
@@ -117,6 +120,7 @@ static void InitUI(){
     Panel = DialogControlHookupStandard(c_triggerControlTypePanel,PANEL_PATH);
     EntryIdField = DialogControlHookup(Panel,c_triggerControlTypeEditBox,ENTRYIDFIELD_PATH);
     EntryNameLabel = DialogControlHookup(Panel,c_triggerControlTypeLabel,ENTRYNAMELABEL_PATH);
+    ModelFrame = DialogControlHookup(Panel,c_triggerControlTypePanel,MODELFRAME_PATH);
 
 }
 
@@ -125,6 +129,6 @@ void ML_UnitFramePanel_init(){
     InitUI();
     InitTimer();
     
-    UnitListCurrentIndex = 0;
+    UnitListCurrentIndex = 3;
     PanelSetUnit(UnitListGet(UnitListCurrentIndex));
 }

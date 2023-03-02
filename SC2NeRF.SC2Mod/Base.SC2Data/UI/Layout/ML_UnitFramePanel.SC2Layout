@@ -34,10 +34,15 @@
                 <UnitLink val="{$parent/$parent/EntryID/@Text}"/>
                 <TeamColorIndex val="6"/>
                 <ResetTurnAnimationOnUnitChange val="True"/>
-                
+                <Animation name="FidgetAnim">
+                    <Event event="OnShown" action="Reset,Play" frame="$this"/>
+                    <Event event="KeepPaused" action="Reset,Play" frame="$this"/>
+                    <Controller type="ActorMsg" end="Pause" frame="$this" ModelFrameName="Model" SendToScope="False">
+                        <Key type="Identifier" time="0.00" value="AnimSetPausedAll"/>
+                    </Controller>
+                </Animation>
         
                 <Frame type="Model" name="Model">
-                    <Anchor relative="$parent"/>
                     <UseAlternateTime val="true"/>
                     <UseAspectScaling val="false"/>
                 </Frame>
